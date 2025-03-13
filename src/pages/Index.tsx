@@ -1,3 +1,4 @@
+
 import Navbar from "@/components/layout/Navbar";
 import EmotionalStateCard from "@/components/dashboard/EmotionalStateCard";
 import PlushDeviceCard from "@/components/dashboard/PlushDeviceCard";
@@ -29,6 +30,11 @@ const Dashboard = () => {
     }
   }, [children, activeChild, setActiveChild]);
   
+  // Add console log to debug
+  console.log("Children:", children);
+  console.log("Active child:", activeChild);
+  console.log("Selected tab ID:", selectedTabId);
+  
   return (
     <div className="min-h-screen bg-background pb-12">
       <Navbar />
@@ -42,7 +48,7 @@ const Dashboard = () => {
           <Tabs value={selectedTabId} className="space-y-4 animate-slide-up opacity-0" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <TabsList className="bg-transparent p-0 h-auto space-x-2">
-                {children.length > 0 ? (
+                {children && children.length > 0 ? (
                   children.map((child) => (
                     <TabsTrigger
                       key={child.id}
@@ -81,7 +87,7 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {children.length > 0 ? (
+            {children && children.length > 0 ? (
               children.map((child) => (
                 <TabsContent key={child.id} value={`child-${child.id}`} className="space-y-6 mt-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
