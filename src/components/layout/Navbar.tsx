@@ -79,7 +79,7 @@ const Navbar = () => {
               <div className="relative w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <div className="absolute w-4 h-4 bg-primary rounded-full animate-pulse-gentle" />
               </div>
-              <span className="font-medium text-lg hidden sm:inline-block">PulcheCare</span>
+              <span className="font-medium text-lg hidden sm:inline-block">Smoozie by Doumia</span>
             </Link>
           </div>
 
