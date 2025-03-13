@@ -1,5 +1,5 @@
 
-import { Navbar } from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import { User } from "lucide-react";
 
 const Profile = () => {
