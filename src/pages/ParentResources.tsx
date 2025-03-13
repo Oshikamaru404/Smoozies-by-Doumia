@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChildrenStore } from "@/services/childrenService";
@@ -24,13 +23,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { 
   Search, MapPin, AlertCircle, Info, BookOpen, Stethoscope, 
-  Brain, Heart, BarChart, ChevronDown, ChevronRight 
+  Brain, Heart, BarChart, ChevronDown, ChevronRight, CheckCircle2, HelpCircle
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock data for specialist map
 const medicalSpecialists = [
   { 
     id: 1, 
@@ -79,7 +77,6 @@ const medicalSpecialists = [
   }
 ];
 
-// Condition advice content
 const conditionAdvice = {
   stress: {
     title: "Conseils pour les situations de stress",
@@ -225,7 +222,7 @@ const conditionAdvice = {
       },
       {
         heading: "Communication facilitée",
-        text: "Face à un enfant avec déficit auditif, parlez clairement en face de lui, utilisez des gestes naturels pour appuyer vos propos, et réduisez les bruits de fond.",
+        text: "Face à un enfant avec déficit auditive, parlez clairement en face de lui, utilisez des gestes naturels pour appuyer vos propos, et réduisez les bruits de fond.",
         priority: "medium"
       },
       {
@@ -284,7 +281,6 @@ const ParentResourcesPage = () => {
   const [showMap, setShowMap] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
 
-  // Redirect if no child is selected
   useEffect(() => {
     if (!activeChild) {
       toast({
@@ -298,29 +294,77 @@ const ParentResourcesPage = () => {
 
   if (!activeChild) return null;
 
-  // Determine relevant conditions based on child data
   const getRelevantConditions = () => {
     const relevant = [];
     
-    // This is simplified logic - in a real app, this would be based on actual detection algorithms
     if (activeChild.emotionalState?.collected) {
       const emotionData = activeChild.emotionalState.data;
       
-      // Example logic for stress detection
       const recentEmotions = emotionData?.history?.slice(-3) || [];
       const recentAnxiety = recentEmotions.some(day => day.emotions.anxious > 20);
       
       if (recentAnxiety) {
         relevant.push("anxiety");
       }
-      
-      // In a real app, there would be more sophisticated analysis here
     }
     
     return relevant;
   };
   
   const relevantConditions = getRelevantConditions();
+
+  const handleFindSpecialist = (specialties) => {
+    setShowMap(true);
+  };
+
+  const getPersonalizedAdvice = () => {
+    if (!activeChild.emotionalState?.collected) {
+      return null;
+    }
+
+    const emotionData = activeChild.emotionalState.data;
+    if (!emotionData || !emotionData.history || emotionData.history.length === 0) {
+      return null;
+    }
+
+    const recentEmotions = emotionData.history.slice(-3);
+    
+    const stressLevel = recentEmotions.reduce((acc, day) => acc + day.emotions.anxious, 0) / 3;
+    const happinessLevel = recentEmotions.reduce((acc, day) => acc + day.emotions.happy, 0) / 3;
+    
+    let advice = null;
+    
+    if (stressLevel > 15) {
+      advice = {
+        title: `${activeChild.name} pourrait souffrir de stress scolaire`,
+        description: "Nos analyses indiquent des niveaux d'anxiété plus élevés que la normale ces derniers jours.",
+        recommendations: [
+          "Prenez le temps de discuter calmement avec votre enfant de sa journée d'école",
+          "Observez s'il mentionne des difficultés avec certaines matières ou des camarades",
+          "Assurez-vous qu'il dispose d'un espace calme pour faire ses devoirs",
+          "Contactez son enseignant pour discuter de son comportement en classe"
+        ],
+        condition: "stress",
+        severity: stressLevel > 25 ? "high" : "medium"
+      };
+    } else if (happinessLevel < 40) {
+      advice = {
+        title: `${activeChild.name} semble moins heureux ces derniers jours`,
+        description: "Nos analyses montrent une baisse des émotions positives récemment.",
+        recommendations: [
+          "Passez plus de temps en famille autour d'activités qu'il apprécie",
+          "Encouragez-le à exprimer ses émotions à travers des activités créatives",
+          "Identifiez ensemble les moments de la journée les plus difficiles"
+        ],
+        condition: "anxiety",
+        severity: "medium"
+      };
+    }
+    
+    return advice;
+  };
+  
+  const personalizedAdvice = getPersonalizedAdvice();
 
   return (
     <div className="container py-8 max-w-7xl">
@@ -333,6 +377,49 @@ const ParentResourcesPage = () => {
             Conseils personnalisés et ressources pour accompagner le développement de {activeChild.name}
           </p>
         </div>
+        
+        {personalizedAdvice && (
+          <Card className={cn(
+            "border-l-4 shadow-md",
+            personalizedAdvice.severity === "high" ? "border-l-red-500" : "border-l-orange-400"
+          )}>
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between">
+                <div className="flex gap-3">
+                  {personalizedAdvice.severity === "high" ? 
+                    <AlertCircle className="h-6 w-6 text-red-500 mt-1 shrink-0" /> : 
+                    <HelpCircle className="h-6 w-6 text-orange-400 mt-1 shrink-0" />
+                  }
+                  <div>
+                    <CardTitle className="text-xl">{personalizedAdvice.title}</CardTitle>
+                    <CardDescription className="mt-1">{personalizedAdvice.description}</CardDescription>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="shrink-0"
+                  onClick={() => setActiveCondition(personalizedAdvice.condition)}
+                >
+                  Voir plus
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="ml-9">
+                <h4 className="font-medium mb-2">Nos recommandations:</h4>
+                <ul className="space-y-2">
+                  {personalizedAdvice.recommendations.map((rec, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span>{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         {relevantConditions.length > 0 && (
           <Alert className="bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30">
@@ -604,7 +691,6 @@ const ParentResourcesPage = () => {
         </Card>
       </div>
       
-      {/* Fix: Proper AlertDialog implementation with trigger */}
       <AlertDialog open={showDisclaimer} onOpenChange={setShowDisclaimer}>
         <AlertDialogContent>
           <AlertDialogHeader>
