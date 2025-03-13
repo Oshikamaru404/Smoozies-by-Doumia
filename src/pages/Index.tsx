@@ -120,25 +120,12 @@ const Dashboard = () => {
                   <p className="text-muted-foreground mb-6">
                     Commencez par ajouter un profil pour votre enfant pour accéder aux fonctionnalités de PulcheCare.
                   </p>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Ajouter un enfant
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <div className="py-4 text-center">
-                        <h3 className="text-lg font-medium mb-2">Ajouter un enfant</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Vous allez être redirigé vers le formulaire d'ajout d'enfant.
-                        </p>
-                        <Button asChild>
-                          <Link to="/add-child">Continuer</Link>
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <Button asChild>
+                    <Link to="/add-child" className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Ajouter un enfant
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </TabsContent>
