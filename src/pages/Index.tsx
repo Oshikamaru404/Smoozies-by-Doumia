@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Bell, Plus, Settings, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -74,12 +75,25 @@ const Dashboard = () => {
                 ) : (
                   <div className="text-muted-foreground px-2">Aucun enfant enregistré</div>
                 )}
-                <Button variant="ghost" size="sm" className="gap-1" asChild>
-                  <Link to="/add-child">
-                    <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline-block">Ajouter</span>
-                  </Link>
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-1">
+                      <Plus className="h-4 w-4" />
+                      <span className="hidden sm:inline-block">Ajouter</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <div className="py-4 text-center">
+                      <h3 className="text-lg font-medium mb-2">Ajouter un enfant</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Vous allez être redirigé vers le formulaire d'ajout d'enfant.
+                      </p>
+                      <Button asChild>
+                        <Link to="/add-child">Continuer</Link>
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </TabsList>
               
               <div className="flex items-center gap-2">
