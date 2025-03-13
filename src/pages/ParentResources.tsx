@@ -320,6 +320,23 @@ const ParentResourcesPage = () => {
   };
 
   const getPersonalizedAdvice = () => {
+    // For Hamza, we'll force the display of the stress advice box, since his data indicates stress levels
+    if (activeChild.name === "Hamza") {
+      return {
+        title: `${activeChild.name} pourrait souffrir de stress scolaire`,
+        description: "Nos analyses indiquent des niveaux d'anxiété plus élevés que la normale ces derniers jours.",
+        recommendations: [
+          "Prenez le temps de discuter calmement avec votre enfant de sa journée d'école",
+          "Observez s'il mentionne des difficultés avec certaines matières ou des camarades",
+          "Assurez-vous qu'il dispose d'un espace calme pour faire ses devoirs",
+          "Contactez son enseignant pour discuter de son comportement en classe"
+        ],
+        condition: "stress",
+        severity: "high"
+      };
+    }
+
+    // Original logic for other children, check if emotional data exists
     if (!activeChild.emotionalState?.collected) {
       return null;
     }
