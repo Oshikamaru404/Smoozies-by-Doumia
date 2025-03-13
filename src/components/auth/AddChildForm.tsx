@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -17,7 +18,6 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarIcon, Camera, Info, X } from "lucide-react";
 import { QrReader } from "react-qr-reader";
-import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -42,7 +42,6 @@ export function AddChildForm() {
   const [step, setStep] = useState(1);
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
-  const { toast } = useToast();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -122,7 +121,8 @@ export function AddChildForm() {
     if (result) {
       form.setValue("plushId", result);
       setScanResult(result);
-      toast("QR Code détecté!", {
+      toast({
+        title: "QR Code détecté!",
         description: `ID de peluche: ${result}`,
       });
       setShowQrScanner(false);
@@ -131,7 +131,8 @@ export function AddChildForm() {
 
   const handleScanError = (error: Error) => {
     console.error("QR Scanner error:", error);
-    toast.error("Erreur de lecture", {
+    toast({
+      title: "Erreur de lecture",
       description: "Impossible d'accéder à la caméra ou de lire le QR code"
     });
   };
@@ -364,7 +365,6 @@ export function AddChildForm() {
                                 handleScan(result.getText());
                               }
                             }}
-                            onError={handleScanError}
                             scanDelay={500}
                             className="w-full"
                             videoStyle={{ objectFit: 'cover' }}
