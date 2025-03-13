@@ -18,12 +18,14 @@ import { useChildrenStore } from "@/services/childrenService";
 
 const Dashboard = () => {
   const { children, activeChild, setActiveChild } = useChildrenStore();
-  const [selectedTabId, setSelectedTabId] = useState<string>("child-0");
+  const [selectedTabId, setSelectedTabId] = useState<string>("");
   
   useEffect(() => {
     if (children.length > 0 && (!activeChild || !children.find(c => c.id === activeChild.id))) {
       setActiveChild(children[0]);
       setSelectedTabId(`child-${children[0].id}`);
+    } else if (activeChild) {
+      setSelectedTabId(`child-${activeChild.id}`);
     }
   }, [children, activeChild, setActiveChild]);
   
@@ -95,10 +97,10 @@ const Dashboard = () => {
                           
                           <div className="flex flex-wrap gap-2">
                             <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">
-                              Dernière analyse: aujourd'hui
+                              Dernière analyse: {child.emotionalState?.collected ? "aujourd'hui" : "non disponible"}
                             </Badge>
                             <Badge variant="outline" className="bg-accent/10 hover:bg-accent/20">
-                              État: Heureux
+                              État: {child.emotionalState?.collected ? "Heureux" : "En attente de données"}
                             </Badge>
                           </div>
                         </div>
@@ -107,7 +109,10 @@ const Dashboard = () => {
                           <Bell className="h-4 w-4" />
                           <AlertTitle>Information</AlertTitle>
                           <AlertDescription>
-                            {child.name} a été calme aujourd'hui. Aucune alerte détectée.
+                            {child.emotionalState?.collected 
+                              ? `${child.name} a été calme aujourd'hui. Aucune alerte détectée.`
+                              : `En attente de données pour ${child.name}. Veuillez connecter la peluche pour collecter des informations.`
+                            }
                           </AlertDescription>
                         </Alert>
                       </CardContent>
@@ -122,12 +127,51 @@ const Dashboard = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <EmotionalStateCard />
-                    <HealthStatusCard />
+                    {child.emotionalState?.collected ? (
+                      <EmotionalStateCard />
+                    ) : (
+                      <Card className="shadow-soft">
+                        <CardContent className="p-6 flex items-center justify-center min-h-[300px]">
+                          <div className="text-center max-w-sm">
+                            <h3 className="text-lg font-medium mb-2">Données émotionnelles non disponibles</h3>
+                            <p className="text-muted-foreground mb-4">
+                              Les capteurs n'ont pas encore collecté de données émotionnelles pour {child.name}.
+                              Connectez la peluche pour commencer la collecte.
+                            </p>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link to="/settings">
+                                Comment synchroniser
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                    
+                    {child.physicalState?.collected ? (
+                      <HealthStatusCard />
+                    ) : (
+                      <Card className="shadow-soft">
+                        <CardContent className="p-6 flex items-center justify-center min-h-[300px]">
+                          <div className="text-center max-w-sm">
+                            <h3 className="text-lg font-medium mb-2">Données physiques non disponibles</h3>
+                            <p className="text-muted-foreground mb-4">
+                              Les capteurs n'ont pas encore collecté de données sur l'état physique de {child.name}.
+                              Connectez la peluche pour commencer la collecte.
+                            </p>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link to="/settings">
+                                Comment synchroniser
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <QuickActionsCard />
+                    <QuickActionsCard childName={child.name} />
                     <RecentActivitiesCard />
                   </div>
                   
