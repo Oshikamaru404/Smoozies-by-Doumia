@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChildrenStore } from "@/services/childrenService";
+import Navbar from "@/components/layout/Navbar";
 import { 
   Card, CardContent, CardDescription, CardHeader, CardTitle 
 } from "@/components/ui/card";
@@ -329,8 +330,8 @@ const ParentResourcesPage = () => {
 
     const recentEmotions = emotionData.history.slice(-3);
     
-    const stressLevel = recentEmotions.reduce((acc, day) => acc + day.emotions.anxious, 0) / 3;
-    const happinessLevel = recentEmotions.reduce((acc, day) => acc + day.emotions.happy, 0) / 3;
+    const stressLevel = recentEmotions.reduce((acc, day) => acc + (day.emotions.anxious || 0), 0) / 3;
+    const happinessLevel = recentEmotions.reduce((acc, day) => acc + (day.emotions.happy || 0), 0) / 3;
     
     let advice = null;
     
@@ -367,415 +368,385 @@ const ParentResourcesPage = () => {
   const personalizedAdvice = getPersonalizedAdvice();
 
   return (
-    <div className="container py-8 max-w-7xl">
-      <div className="flex flex-col gap-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">
-            Ressources pour Parents
-          </h1>
-          <p className="text-muted-foreground">
-            Conseils personnalisés et ressources pour accompagner le développement de {activeChild.name}
-          </p>
-        </div>
-        
-        {personalizedAdvice && (
-          <Card className={cn(
-            "border-l-4 shadow-md",
-            personalizedAdvice.severity === "high" ? "border-l-red-500" : "border-l-orange-400"
-          )}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex gap-3">
-                  {personalizedAdvice.severity === "high" ? 
-                    <AlertCircle className="h-6 w-6 text-red-500 mt-1 shrink-0" /> : 
-                    <HelpCircle className="h-6 w-6 text-orange-400 mt-1 shrink-0" />
-                  }
-                  <div>
-                    <CardTitle className="text-xl">{personalizedAdvice.title}</CardTitle>
-                    <CardDescription className="mt-1">{personalizedAdvice.description}</CardDescription>
+    <>
+      <Navbar />
+      <div className="container py-8 max-w-7xl">
+        <div className="flex flex-col gap-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">
+              Ressources pour Parents
+            </h1>
+            <p className="text-muted-foreground">
+              Conseils personnalisés et ressources pour accompagner le développement de {activeChild.name}
+            </p>
+          </div>
+          
+          {personalizedAdvice && (
+            <Card className={cn(
+              "border-l-4 shadow-md",
+              personalizedAdvice.severity === "high" ? "border-l-red-500" : "border-l-orange-400"
+            )}>
+              <CardHeader className="pb-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex gap-3">
+                    {personalizedAdvice.severity === "high" ? 
+                      <AlertCircle className="h-6 w-6 text-red-500 mt-1 shrink-0" /> : 
+                      <HelpCircle className="h-6 w-6 text-orange-400 mt-1 shrink-0" />
+                    }
+                    <div>
+                      <CardTitle className="text-xl">{personalizedAdvice.title}</CardTitle>
+                      <CardDescription className="mt-1">{personalizedAdvice.description}</CardDescription>
+                    </div>
                   </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="shrink-0"
+                    onClick={() => setActiveCondition(personalizedAdvice.condition)}
+                  >
+                    Voir plus
+                  </Button>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="shrink-0"
-                  onClick={() => setActiveCondition(personalizedAdvice.condition)}
-                >
-                  Voir plus
-                </Button>
-              </div>
+              </CardHeader>
+              <CardContent>
+                <div className="ml-9">
+                  <h4 className="font-medium mb-2">Nos recommandations:</h4>
+                  <ul className="space-y-2">
+                    {personalizedAdvice.recommendations.map((rec, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {relevantConditions.length > 0 && (
+            <Alert className="bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              <AlertDescription>
+                <span className="font-semibold">Attention :</span> Nous avons détecté des signes qui pourraient nécessiter votre attention.
+                Consultez les sections {relevantConditions.map(c => conditionAdvice[c].title).join(", ")}.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <Tabs defaultValue={activeCondition} onValueChange={setActiveCondition} className="w-full">
+            <TabsList className="w-full grid grid-cols-3 md:grid-cols-6">
+              <TabsTrigger value="stress">Stress</TabsTrigger>
+              <TabsTrigger value="anxiety">Anxiété</TabsTrigger>
+              <TabsTrigger value="autism">Autisme</TabsTrigger>
+              <TabsTrigger value="adhd">TDAH</TabsTrigger>
+              <TabsTrigger value="hearing">Audition</TabsTrigger>
+              <TabsTrigger value="epilepsy">Épilepsie</TabsTrigger>
+            </TabsList>
+            
+            {Object.entries(conditionAdvice).map(([key, condition]) => (
+              <TabsContent key={key} value={key} className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle>{condition.title}</CardTitle>
+                        <CardDescription>{condition.description}</CardDescription>
+                      </div>
+                      
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex items-center gap-1"
+                        onClick={() => setShowDisclaimer(true)}
+                      >
+                        <Info className="h-4 w-4" />
+                        <span className="hidden sm:inline">Important</span>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-6">
+                    {condition.content.map((item, index) => (
+                      <Collapsible key={index}>
+                        <div className="flex items-start gap-2">
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm" className="p-0 h-6 mt-0.5">
+                              <ChevronRight className="h-5 w-5" />
+                            </Button>
+                          </CollapsibleTrigger>
+                          
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium">{item.heading}</h3>
+                              {item.priority === 'high' && (
+                                <Badge className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400">Prioritaire</Badge>
+                              )}
+                            </div>
+                            
+                            <CollapsibleContent>
+                              <p className="text-muted-foreground text-sm mt-2">
+                                {item.text}
+                              </p>
+                            </CollapsibleContent>
+                          </div>
+                        </div>
+                      </Collapsible>
+                    ))}
+                    
+                    <div className="mt-6 pt-6 border-t flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+                      <div className="text-sm space-y-1">
+                        <p className="font-medium">Types de spécialistes recommandés:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {condition.specialists.map((specialist, i) => (
+                            <Badge key={i} variant="outline" className="bg-primary/5">
+                              {specialist}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={() => handleFindSpecialist(condition.specialists)}
+                        className="shrink-0"
+                      >
+                        <MapPin className="mr-2 h-4 w-4" />
+                        Trouver un spécialiste
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            ))}
+          </Tabs>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Ressources supplémentaires</CardTitle>
+              <CardDescription>Guides et lectures recommandées pour les parents</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="ml-9">
-                <h4 className="font-medium mb-2">Nos recommandations:</h4>
-                <ul className="space-y-2">
-                  {personalizedAdvice.recommendations.map((rec, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span>{rec}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="h-auto p-4 justify-start text-left">
+                      <div className="flex gap-4 items-start">
+                        <BookOpen className="h-8 w-8 text-primary shrink-0 mt-1" />
+                        <div>
+                          <h3 className="font-medium">Guide pour parents: Communication positive</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Techniques de communication pour développer une relation de confiance avec votre enfant.
+                          </p>
+                        </div>
+                      </div>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Guide pour parents: Communication positive</DialogTitle>
+                      <DialogDescription>
+                        Techniques pour communiquer efficacement avec votre enfant
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                      <p>
+                        La communication positive est fondamentale pour développer une relation de confiance avec votre enfant. 
+                        Ce guide vous propose des techniques concrètes pour améliorer votre communication quotidienne.
+                      </p>
+                      <h4 className="font-semibold">Points clés:</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        <li>Écoute active: accordez toute votre attention</li>
+                        <li>Validation des émotions: reconnaissez les sentiments</li>
+                        <li>Questions ouvertes: encouragez l'expression</li>
+                        <li>Moments dédiés: créez des rituels de discussion</li>
+                        <li>Communication non-verbale: soyez attentif au langage corporel</li>
+                      </ul>
+                    </div>
+                    <DialogFooter>
+                      <Button>Télécharger le guide complet</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="h-auto p-4 justify-start text-left">
+                      <div className="flex gap-4 items-start">
+                        <Brain className="h-8 w-8 text-primary shrink-0 mt-1" />
+                        <div>
+                          <h3 className="font-medium">Développement cognitif: âge par âge</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Comprendre les étapes du développement cognitif pour mieux soutenir l'apprentissage.
+                          </p>
+                        </div>
+                      </div>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Développement cognitif: âge par âge</DialogTitle>
+                      <DialogDescription>
+                        Comprendre l'évolution des capacités cognitives de votre enfant
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                      <p>
+                        À chaque âge correspondent des étapes spécifiques de développement cognitif. Ce guide vous aide à comprendre 
+                        où en est votre enfant et comment l'accompagner.
+                      </p>
+                      <h4 className="font-semibold">Étapes clés:</h4>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li><span className="font-medium">0-2 ans:</span> Pensée sensorimotrice, exploration du monde par les sens</li>
+                        <li><span className="font-medium">2-7 ans:</span> Pensée préopératoire, début du langage symbolique</li>
+                        <li><span className="font-medium">7-11 ans:</span> Opérations concrètes, logique appliquée à des objets concrets</li>
+                        <li><span className="font-medium">11+ ans:</span> Opérations formelles, raisonnement abstrait</li>
+                      </ul>
+                    </div>
+                    <DialogFooter>
+                      <Button>Explorer les activités adaptées par âge</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="h-auto p-4 justify-start text-left">
+                      <div className="flex gap-4 items-start">
+                        <Heart className="h-8 w-8 text-primary shrink-0 mt-1" />
+                        <div>
+                          <h3 className="font-medium">Développement socio-émotionnel</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Comment aider votre enfant à développer intelligence émotionnelle et compétences sociales.
+                          </p>
+                        </div>
+                      </div>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Développement socio-émotionnel</DialogTitle>
+                      <DialogDescription>
+                        Favoriser l'intelligence émotionnelle de votre enfant
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                      <p>
+                        L'intelligence émotionnelle est aussi importante que l'intelligence cognitive pour réussir dans la vie.
+                        Découvrez comment aider votre enfant à développer cette compétence essentielle.
+                      </p>
+                      <h4 className="font-semibold">Axes de développement:</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        <li>Reconnaître ses propres émotions</li>
+                        <li>Comprendre les émotions des autres (empathie)</li>
+                        <li>Réguler ses émotions de façon adaptée</li>
+                        <li>Développer des relations positives</li>
+                        <li>Prendre des décisions responsables</li>
+                      </ul>
+                    </div>
+                    <DialogFooter>
+                      <Button>Découvrir les activités recommandées</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="h-auto p-4 justify-start text-left">
+                      <div className="flex gap-4 items-start">
+                        <Stethoscope className="h-8 w-8 text-primary shrink-0 mt-1" />
+                        <div>
+                          <h3 className="font-medium">Santé et développement</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Calendrier des examens médicaux recommandés et signes qui nécessitent une consultation.
+                          </p>
+                        </div>
+                      </div>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Santé et développement</DialogTitle>
+                      <DialogDescription>
+                        Suivi médical recommandé et signaux d'alerte
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                      <p>
+                        Un suivi médical régulier est essentiel pour s'assurer du bon développement de votre enfant.
+                        Ce guide vous aide à comprendre quand consulter et quels signes surveiller.
+                      </p>
+                      <h4 className="font-semibold">Examens recommandés:</h4>
+                      <ul className="list-disc pl-5 space-y-2">
+                        <li>Visites pédiatriques régulières (calendrier par âge)</li>
+                        <li>Suivi dentaire à partir de 1 an</li>
+                        <li>Examen de la vision à 3 ans</li>
+                        <li>Bilan auditif au moindre doute</li>
+                        <li>Bilan de développement à l'entrée en maternelle</li>
+                      </ul>
+                    </div>
+                    <DialogFooter>
+                      <Button>Télécharger le calendrier complet</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>
-        )}
+        </div>
         
-        {relevantConditions.length > 0 && (
-          <Alert className="bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800/30">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            <AlertDescription>
-              <span className="font-semibold">Attention :</span> Nous avons détecté des signes qui pourraient nécessiter votre attention.
-              Consultez les sections {relevantConditions.map(c => conditionAdvice[c].title).join(", ")}.
-            </AlertDescription>
-          </Alert>
-        )}
+        <AlertDialog open={showDisclaimer} onOpenChange={setShowDisclaimer}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Note importante</AlertDialogTitle>
+              <AlertDialogDescription>
+                Les conseils fournis dans cette section sont à titre informatif uniquement et ne remplacent pas l'avis d'un professionnel de santé.
+                <br /><br />
+                Si vous avez des inquiétudes concernant le développement ou la santé de votre enfant, consultez un médecin ou un spécialiste qualifié.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Fermer</AlertDialogCancel>
+              <AlertDialogAction>J'ai compris</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         
-        <Tabs defaultValue={activeCondition} onValueChange={setActiveCondition} className="w-full">
-          <TabsList className="w-full grid grid-cols-3 md:grid-cols-6">
-            <TabsTrigger value="stress">Stress</TabsTrigger>
-            <TabsTrigger value="anxiety">Anxiété</TabsTrigger>
-            <TabsTrigger value="autism">Autisme</TabsTrigger>
-            <TabsTrigger value="adhd">TDAH</TabsTrigger>
-            <TabsTrigger value="hearing">Audition</TabsTrigger>
-            <TabsTrigger value="epilepsy">Épilepsie</TabsTrigger>
-          </TabsList>
-          
-          {Object.entries(conditionAdvice).map(([key, condition]) => (
-            <TabsContent key={key} value={key} className="mt-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle>{condition.title}</CardTitle>
-                      <CardDescription>{condition.description}</CardDescription>
-                    </div>
-                    
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="flex items-center gap-1"
-                      onClick={() => setShowDisclaimer(true)}
-                    >
-                      <Info className="h-4 w-4" />
-                      <span className="hidden sm:inline">Important</span>
-                    </Button>
-                  </div>
-                </CardHeader>
+        <Sheet open={showMap} onOpenChange={setShowMap}>
+          <SheetContent className="w-full md:max-w-md" side="right">
+            <div className="h-full flex flex-col">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold">Spécialistes à proximité</h2>
+                <p className="text-sm text-muted-foreground">
+                  Basé sur votre localisation actuelle
+                </p>
                 
-                <CardContent className="space-y-6">
-                  {condition.content.map((item, index) => (
-                    <Collapsible key={index}>
-                      <div className="flex items-start gap-2">
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="p-0 h-6 mt-0.5">
-                            <ChevronRight className="h-5 w-5" />
-                          </Button>
-                        </CollapsibleTrigger>
-                        
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{item.heading}</h3>
-                            {item.priority === 'high' && (
-                              <Badge className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400">Prioritaire</Badge>
-                            )}
-                          </div>
-                          
-                          <CollapsibleContent>
-                            <p className="text-muted-foreground text-sm mt-2">
-                              {item.text}
-                            </p>
-                          </CollapsibleContent>
-                        </div>
+                <div className="relative mt-4">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input 
+                    type="text" 
+                    placeholder="Rechercher un spécialiste..." 
+                    className="w-full pl-10 pr-4 py-2 border rounded-md"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-auto space-y-3 pr-1">
+                {medicalSpecialists.map(specialist => (
+                  <div 
+                    key={specialist.id}
+                    className="bg-card p-3 rounded-lg border shadow-sm hover:shadow transition-shadow"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium">{specialist.name}</h3>
+                        <p className="text-sm text-primary">{specialist.specialty}</p>
                       </div>
-                    </Collapsible>
-                  ))}
-                  
-                  <div className="mt-6 pt-6 border-t flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
-                    <div className="text-sm space-y-1">
-                      <p className="font-medium">Types de spécialistes recommandés:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {condition.specialists.map((specialist, i) => (
-                          <Badge key={i} variant="outline" className="bg-primary/5">
-                            {specialist}
-                          </Badge>
-                        ))}
-                      </div>
+                      <Badge variant="outline" className="bg-primary/5">
+                        {specialist.distance}
+                      </Badge>
                     </div>
                     
-                    <Button 
-                      onClick={() => handleFindSpecialist(condition.specialists)}
-                      className="shrink-0"
-                    >
-                      <MapPin className="mr-2 h-4 w-4" />
-                      Trouver un spécialiste
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          ))}
-        </Tabs>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Ressources supplémentaires</CardTitle>
-            <CardDescription>Guides et lectures recommandées pour les parents</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="h-auto p-4 justify-start text-left">
-                    <div className="flex gap-4 items-start">
-                      <BookOpen className="h-8 w-8 text-primary shrink-0 mt-1" />
-                      <div>
-                        <h3 className="font-medium">Guide pour parents: Communication positive</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Techniques de communication pour développer une relation de confiance avec votre enfant.
-                        </p>
-                      </div>
-                    </div>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Guide pour parents: Communication positive</DialogTitle>
-                    <DialogDescription>
-                      Techniques pour communiquer efficacement avec votre enfant
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-2">
-                    <p>
-                      La communication positive est fondamentale pour développer une relation de confiance avec votre enfant. 
-                      Ce guide vous propose des techniques concrètes pour améliorer votre communication quotidienne.
-                    </p>
-                    <h4 className="font-semibold">Points clés:</h4>
-                    <ul className="list-disc pl-5 space-y-2">
-                      <li>Écoute active: accordez toute votre attention</li>
-                      <li>Validation des émotions: reconnaissez les sentiments</li>
-                      <li>Questions ouvertes: encouragez l'expression</li>
-                      <li>Moments dédiés: créez des rituels de discussion</li>
-                      <li>Communication non-verbale: soyez attentif au langage corporel</li>
-                    </ul>
-                  </div>
-                  <DialogFooter>
-                    <Button>Télécharger le guide complet</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="h-auto p-4 justify-start text-left">
-                    <div className="flex gap-4 items-start">
-                      <Brain className="h-8 w-8 text-primary shrink-0 mt-1" />
-                      <div>
-                        <h3 className="font-medium">Développement cognitif: âge par âge</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Comprendre les étapes du développement cognitif pour mieux soutenir l'apprentissage.
-                        </p>
-                      </div>
-                    </div>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Développement cognitif: âge par âge</DialogTitle>
-                    <DialogDescription>
-                      Comprendre l'évolution des capacités cognitives de votre enfant
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-2">
-                    <p>
-                      À chaque âge correspondent des étapes spécifiques de développement cognitif. Ce guide vous aide à comprendre 
-                      où en est votre enfant et comment l'accompagner.
-                    </p>
-                    <h4 className="font-semibold">Étapes clés:</h4>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li><span className="font-medium">0-2 ans:</span> Pensée sensorimotrice, exploration du monde par les sens</li>
-                      <li><span className="font-medium">2-7 ans:</span> Pensée préopératoire, début du langage symbolique</li>
-                      <li><span className="font-medium">7-11 ans:</span> Opérations concrètes, logique appliquée à des objets concrets</li>
-                      <li><span className="font-medium">11+ ans:</span> Opérations formelles, raisonnement abstrait</li>
-                    </ul>
-                  </div>
-                  <DialogFooter>
-                    <Button>Explorer les activités adaptées par âge</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="h-auto p-4 justify-start text-left">
-                    <div className="flex gap-4 items-start">
-                      <Heart className="h-8 w-8 text-primary shrink-0 mt-1" />
-                      <div>
-                        <h3 className="font-medium">Développement socio-émotionnel</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Comment aider votre enfant à développer intelligence émotionnelle et compétences sociales.
-                        </p>
-                      </div>
-                    </div>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Développement socio-émotionnel</DialogTitle>
-                    <DialogDescription>
-                      Favoriser l'intelligence émotionnelle de votre enfant
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-2">
-                    <p>
-                      L'intelligence émotionnelle est aussi importante que l'intelligence cognitive pour réussir dans la vie.
-                      Découvrez comment aider votre enfant à développer cette compétence essentielle.
-                    </p>
-                    <h4 className="font-semibold">Axes de développement:</h4>
-                    <ul className="list-disc pl-5 space-y-2">
-                      <li>Reconnaître ses propres émotions</li>
-                      <li>Comprendre les émotions des autres (empathie)</li>
-                      <li>Réguler ses émotions de façon adaptée</li>
-                      <li>Développer des relations positives</li>
-                      <li>Prendre des décisions responsables</li>
-                    </ul>
-                  </div>
-                  <DialogFooter>
-                    <Button>Découvrir les activités recommandées</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="h-auto p-4 justify-start text-left">
-                    <div className="flex gap-4 items-start">
-                      <Stethoscope className="h-8 w-8 text-primary shrink-0 mt-1" />
-                      <div>
-                        <h3 className="font-medium">Santé et développement</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Calendrier des examens médicaux recommandés et signes qui nécessitent une consultation.
-                        </p>
-                      </div>
-                    </div>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Santé et développement</DialogTitle>
-                    <DialogDescription>
-                      Suivi médical recommandé et signaux d'alerte
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-2">
-                    <p>
-                      Un suivi médical régulier est essentiel pour s'assurer du bon développement de votre enfant.
-                      Ce guide vous aide à comprendre quand consulter et quels signes surveiller.
-                    </p>
-                    <h4 className="font-semibold">Examens recommandés:</h4>
-                    <ul className="list-disc pl-5 space-y-2">
-                      <li>Visites pédiatriques régulières (calendrier par âge)</li>
-                      <li>Suivi dentaire à partir de 1 an</li>
-                      <li>Examen de la vision à 3 ans</li>
-                      <li>Bilan auditif au moindre doute</li>
-                      <li>Bilan de développement à l'entrée en maternelle</li>
-                    </ul>
-                  </div>
-                  <DialogFooter>
-                    <Button>Télécharger le calendrier complet</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <AlertDialog open={showDisclaimer} onOpenChange={setShowDisclaimer}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Note importante</AlertDialogTitle>
-            <AlertDialogDescription>
-              Les conseils fournis dans cette section sont à titre informatif uniquement et ne remplacent pas l'avis d'un professionnel de santé.
-              <br /><br />
-              Si vous avez des inquiétudes concernant le développement ou la santé de votre enfant, consultez un médecin ou un spécialiste qualifié.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Fermer</AlertDialogCancel>
-            <AlertDialogAction>J'ai compris</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      <Sheet open={showMap} onOpenChange={setShowMap}>
-        <SheetContent className="w-full md:max-w-md" side="right">
-          <div className="h-full flex flex-col">
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold">Spécialistes à proximité</h2>
-              <p className="text-sm text-muted-foreground">
-                Basé sur votre localisation actuelle
-              </p>
-              
-              <div className="relative mt-4">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input 
-                  type="text" 
-                  placeholder="Rechercher un spécialiste..." 
-                  className="w-full pl-10 pr-4 py-2 border rounded-md"
-                />
-              </div>
-            </div>
-            
-            <div className="flex-1 overflow-auto space-y-3 pr-1">
-              {medicalSpecialists.map(specialist => (
-                <div 
-                  key={specialist.id}
-                  className="bg-card p-3 rounded-lg border shadow-sm hover:shadow transition-shadow"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">{specialist.name}</h3>
-                      <p className="text-sm text-primary">{specialist.specialty}</p>
-                    </div>
-                    <Badge variant="outline" className="bg-primary/5">
-                      {specialist.distance}
-                    </Badge>
-                  </div>
-                  
-                  <div className="mt-2 space-y-1 text-sm">
-                    <p className="flex items-center text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5 mr-1.5" />
-                      {specialist.address}
-                    </p>
-                    <p className="flex items-center text-muted-foreground">
-                      <BarChart className="h-3.5 w-3.5 mr-1.5" />
-                      Note: {specialist.rating}/5.0
-                    </p>
-                    <p className="text-muted-foreground mt-1">
-                      Disponible: <span className="font-medium">{specialist.availableOn}</span>
-                    </p>
-                  </div>
-                  
-                  <div className="mt-3 flex justify-end gap-2">
-                    <Button size="sm" variant="outline">Plus d'infos</Button>
-                    <Button size="sm">Prendre RDV</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-4 pt-4 border-t text-center">
-              <p className="text-sm text-muted-foreground">
-                Cette liste est fournie à titre informatif uniquement.<br />
-                Consultez votre médecin pour une orientation personnalisée.
-              </p>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </div>
-  );
-};
-
-export default ParentResourcesPage;
+                    <div className="mt-2 space-y-1 text-sm">
+                      <p className="flex items-center text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 mr-1.5" />
+                        {specialist.address}
