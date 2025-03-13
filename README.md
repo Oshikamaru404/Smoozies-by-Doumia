@@ -1,33 +1,29 @@
-# Welcome to your Lovable project
 
-## Project info
+# Smoozie by Doumia
 
-**URL**: https://lovable.dev/projects/0cb963cc-4dd7-4a22-aff8-ca37b5dfa379
+## About Smoozie
 
-## How can I edit this code?
+Smoozie by Doumia is an innovative smart plush companion designed to support children's emotional well-being. The application works in tandem with a plush toy equipped with sensors to monitor a child's emotional state and provide insights to parents.
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+- **Emotional State Monitoring**: Track your child's emotional well-being through advanced sensors embedded in the Smoozie plush
+- **Health Status**: Monitor vital health metrics of your child
+- **Activity Recommendations**: Access personalized activities based on your child's emotional needs
+- **Parent Resources**: Educational content and guidance for parents on emotional intelligence
+- **Analytics Dashboard**: Visualize emotional patterns and trends over time
+- **Multi-child Support**: Manage multiple children's profiles from a single account
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0cb963cc-4dd7-4a22-aff8-ca37b5dfa379) and start prompting.
+## Project Setup
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+To run this project locally:
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
 
 # Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+cd smoozie-by-doumia
 
 # Step 3: Install the necessary dependencies.
 npm i
@@ -36,34 +32,35 @@ npm i
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Technology Stack
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Recharts for data visualization
+- React Router for navigation
+- Zod for schema validation
 
-## How can I deploy this project?
+## How Smoozie Works
 
-Simply open [Lovable](https://lovable.dev/projects/0cb963cc-4dd7-4a22-aff8-ca37b5dfa379) and click on Share -> Publish.
+1. **Smart Sensor Technology**: The plush companion contains sensors that detect physical cues related to emotional states.
+2. **Real-time Data Analysis**: The app processes sensor data to identify emotional patterns.
+3. **Personalized Recommendations**: Based on detected emotional states, the system suggests specific activities or interventions.
+4. **Parental Insights**: Parents receive notifications and insights about their child's emotional well-being.
+5. **Educational Resources**: The app provides resources to help parents better understand and support their child's emotional development.
 
-## I want to use a custom domain - is that possible?
+## Deployment
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+To deploy this project, build the application for production and deploy it to your preferred hosting service:
+
+```sh
+npm run build
+```
+
+## Support
+
+For any questions or support needs, please contact the Doumia team at support@doumia.com.
