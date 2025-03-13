@@ -20,7 +20,7 @@ import { calculateAge } from "@/lib/utils";
 
 const Dashboard = () => {
   const { children, activeChild, setActiveChild } = useChildrenStore();
-  const [selectedTabId, setSelectedTabId] = useState<string>("");
+  const [selectedTabId, setSelectedTabId] = useState<string>("no-children");
   
   useEffect(() => {
     // Ensure we have children data and set the default tab and active child
@@ -34,12 +34,18 @@ const Dashboard = () => {
       } else {
         setSelectedTabId(`child-${children[0].id}`);
       }
+    } else {
+      // Make sure we have a valid default if no children
+      setSelectedTabId("no-children");
     }
   }, [children, activeChild, setActiveChild]);
   
   // Default tab ID for when no children are present
   const defaultTabId = "no-children";
-  const effectiveTabId = selectedTabId || (children?.length > 0 ? `child-${children[0].id}` : defaultTabId);
+  // Ensure we always have a valid tab value
+  const effectiveTabId = (children && children.length > 0) 
+    ? (selectedTabId || `child-${children[0].id}`) 
+    : defaultTabId;
   
   return (
     <div className="min-h-screen bg-background pb-12">
@@ -51,7 +57,7 @@ const Dashboard = () => {
             Tableau de bord
           </h1>
           
-          <Tabs value={effectiveTabId} className="space-y-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <Tabs defaultValue={effectiveTabId} value={effectiveTabId} className="space-y-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <TabsList className="bg-transparent p-0 h-auto space-x-2">
                 {children && children.length > 0 ? (
@@ -106,117 +112,122 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Add default tab content for when no children exist */}
-            <TabsContent value={defaultTabId} className="py-12 text-center">
-              <div className="max-w-md mx-auto">
-                <h3 className="text-xl font-medium mb-3">Aucun enfant enregistré</h3>
-                <p className="text-muted-foreground mb-6">
-                  Commencez par ajouter un profil pour votre enfant pour accéder aux fonctionnalités de PulcheCare.
-                </p>
-                <Button asChild>
-                  <Link to="/add-child" className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Ajouter un enfant
-                  </Link>
-                </Button>
+            {/* Tab content for when no children exist */}
+            <TabsContent value={defaultTabId}>
+              <div className="py-12 text-center">
+                <div className="max-w-md mx-auto">
+                  <h3 className="text-xl font-medium mb-3">Aucun enfant enregistré</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Commencez par ajouter un profil pour votre enfant pour accéder aux fonctionnalités de PulcheCare.
+                  </p>
+                  <Button asChild>
+                    <Link to="/add-child" className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Ajouter un enfant
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </TabsContent>
             
+            {/* Loop through children to create tab content only if there are children */}
             {children && children.length > 0 && children.map((child) => (
-              <TabsContent key={child.id} value={`child-${child.id}`} className="space-y-6 mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="md:col-span-2 bg-gradient-to-br from-primary/5 to-accent/5 shadow-soft">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                        <div>
-                          <h2 className="text-2xl font-bold">{child.name}</h2>
-                          <p className="text-muted-foreground">
-                            {calculateAge(child.birthdate)} ans
-                          </p>
+              <TabsContent key={child.id} value={`child-${child.id}`}>
+                <div className="space-y-6 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="md:col-span-2 bg-gradient-to-br from-primary/5 to-accent/5 shadow-soft">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                          <div>
+                            <h2 className="text-2xl font-bold">{child.name}</h2>
+                            <p className="text-muted-foreground">
+                              {calculateAge(child.birthdate)} ans
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">
+                              Dernière analyse: {child.emotionalState?.collected ? "aujourd'hui" : "non disponible"}
+                            </Badge>
+                            <Badge variant="outline" className="bg-accent/10 hover:bg-accent/20">
+                              État: {child.emotionalState?.collected ? "Heureux" : "En attente de données"}
+                            </Badge>
+                          </div>
                         </div>
                         
-                        <div className="flex flex-wrap gap-2">
-                          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">
-                            Dernière analyse: {child.emotionalState?.collected ? "aujourd'hui" : "non disponible"}
-                          </Badge>
-                          <Badge variant="outline" className="bg-accent/10 hover:bg-accent/20">
-                            État: {child.emotionalState?.collected ? "Heureux" : "En attente de données"}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      <Alert className="bg-card">
-                        <Bell className="h-4 w-4" />
-                        <AlertTitle>Information</AlertTitle>
-                        <AlertDescription>
-                          {child.emotionalState?.collected 
-                            ? `${child.name} a été calme aujourd'hui. Aucune alerte détectée.`
-                            : `En attente de données pour ${child.name}. Veuillez connecter la peluche pour collecter des informations.`
-                          }
-                        </AlertDescription>
-                      </Alert>
-                    </CardContent>
-                  </Card>
-                  
-                  <PlushDeviceCard
-                    name={child.plushName || "PulcheCare Buddy"}
-                    status={child.status}
-                    batteryLevel={child.batteryLevel}
-                    lastSync={child.lastSync}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {child.emotionalState?.collected ? (
-                    <EmotionalStateCard />
-                  ) : (
-                    <Card className="shadow-soft">
-                      <CardContent className="p-6 flex items-center justify-center min-h-[300px]">
-                        <div className="text-center max-w-sm">
-                          <h3 className="text-lg font-medium mb-2">Données émotionnelles non disponibles</h3>
-                          <p className="text-muted-foreground mb-4">
-                            Les capteurs n'ont pas encore collecté de données émotionnelles pour {child.name}.
-                            Connectez la peluche pour commencer la collecte.
-                          </p>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to="/settings">
-                              Comment synchroniser
-                            </Link>
-                          </Button>
-                        </div>
+                        <Alert className="bg-card">
+                          <Bell className="h-4 w-4" />
+                          <AlertTitle>Information</AlertTitle>
+                          <AlertDescription>
+                            {child.emotionalState?.collected 
+                              ? `${child.name} a été calme aujourd'hui. Aucune alerte détectée.`
+                              : `En attente de données pour ${child.name}. Veuillez connecter la peluche pour collecter des informations.`
+                            }
+                          </AlertDescription>
+                        </Alert>
                       </CardContent>
                     </Card>
-                  )}
+                    
+                    <PlushDeviceCard
+                      name={child.plushName || "PulcheCare Buddy"}
+                      status={child.status}
+                      batteryLevel={child.batteryLevel}
+                      lastSync={child.lastSync}
+                    />
+                  </div>
                   
-                  {child.physicalState?.collected ? (
-                    <HealthStatusCard />
-                  ) : (
-                    <Card className="shadow-soft">
-                      <CardContent className="p-6 flex items-center justify-center min-h-[300px]">
-                        <div className="text-center max-w-sm">
-                          <h3 className="text-lg font-medium mb-2">Données physiques non disponibles</h3>
-                          <p className="text-muted-foreground mb-4">
-                            Les capteurs n'ont pas encore collecté de données sur l'état physique de {child.name}.
-                            Connectez la peluche pour commencer la collecte.
-                          </p>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to="/settings">
-                              Comment synchroniser
-                            </Link>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <QuickActionsCard childName={child.name} />
-                  <RecentActivitiesCard />
-                </div>
-                
-                <div className="grid grid-cols-1 gap-6">
-                  <AlarmNotificationsCard />
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {child.emotionalState?.collected ? (
+                      <EmotionalStateCard />
+                    ) : (
+                      <Card className="shadow-soft">
+                        <CardContent className="p-6 flex items-center justify-center min-h-[300px]">
+                          <div className="text-center max-w-sm">
+                            <h3 className="text-lg font-medium mb-2">Données émotionnelles non disponibles</h3>
+                            <p className="text-muted-foreground mb-4">
+                              Les capteurs n'ont pas encore collecté de données émotionnelles pour {child.name}.
+                              Connectez la peluche pour commencer la collecte.
+                            </p>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link to="/settings">
+                                Comment synchroniser
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                    
+                    {child.physicalState?.collected ? (
+                      <HealthStatusCard />
+                    ) : (
+                      <Card className="shadow-soft">
+                        <CardContent className="p-6 flex items-center justify-center min-h-[300px]">
+                          <div className="text-center max-w-sm">
+                            <h3 className="text-lg font-medium mb-2">Données physiques non disponibles</h3>
+                            <p className="text-muted-foreground mb-4">
+                              Les capteurs n'ont pas encore collecté de données sur l'état physique de {child.name}.
+                              Connectez la peluche pour commencer la collecte.
+                            </p>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link to="/settings">
+                                Comment synchroniser
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <QuickActionsCard childName={child.name} />
+                    <RecentActivitiesCard />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-6">
+                    <AlarmNotificationsCard />
+                  </div>
                 </div>
               </TabsContent>
             ))}

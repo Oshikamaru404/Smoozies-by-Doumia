@@ -211,7 +211,7 @@ export const useChildrenStore = create<ChildrenState>()(
           status: 'connected',
           batteryLevel: Math.floor(Math.random() * 100),
           lastSync: 'à l\'instant',
-          // Initialiser les états comme non collectés
+          // Initialize emotional and physical state
           emotionalState: {
             collected: false
           },
