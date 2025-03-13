@@ -22,11 +22,17 @@ const Dashboard = () => {
   const [selectedTabId, setSelectedTabId] = useState<string>("");
   
   useEffect(() => {
-    if (children.length > 0 && (!activeChild || !children.find(c => c.id === activeChild.id))) {
-      setActiveChild(children[0]);
-      setSelectedTabId(`child-${children[0].id}`);
-    } else if (activeChild) {
-      setSelectedTabId(`child-${activeChild.id}`);
+    // Ensure we have children data and set the default tab and active child
+    if (children && children.length > 0) {
+      if (!activeChild || !children.find(c => c.id === activeChild.id)) {
+        setActiveChild(children[0]);
+      }
+      // Set selected tab ID based on active child
+      if (activeChild) {
+        setSelectedTabId(`child-${activeChild.id}`);
+      } else {
+        setSelectedTabId(`child-${children[0].id}`);
+      }
     }
   }, [children, activeChild, setActiveChild]);
   
@@ -41,11 +47,11 @@ const Dashboard = () => {
       
       <main className="container mx-auto px-4 sm:px-6 pt-6">
         <header className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-4 animate-slide-up opacity-0" style={{ animationDelay: '0.1s' }}>
+          <h1 className="text-4xl font-bold tracking-tight mb-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
             Tableau de bord
           </h1>
           
-          <Tabs value={selectedTabId} className="space-y-4 animate-slide-up opacity-0" style={{ animationDelay: '0.2s' }}>
+          <Tabs value={selectedTabId || ''} className="space-y-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <TabsList className="bg-transparent p-0 h-auto space-x-2">
                 {children && children.length > 0 ? (
