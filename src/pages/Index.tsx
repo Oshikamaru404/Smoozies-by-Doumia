@@ -1,4 +1,3 @@
-
 import Navbar from "@/components/layout/Navbar";
 import EmotionalStateCard from "@/components/dashboard/EmotionalStateCard";
 import PlushDeviceCard from "@/components/dashboard/PlushDeviceCard";
@@ -15,6 +14,7 @@ import { Bell, Plus, Settings, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useChildrenStore } from "@/services/childrenService";
+import { calculateAge } from "@/lib/utils";
 
 const Dashboard = () => {
   const { children, activeChild, setActiveChild } = useChildrenStore();
@@ -202,19 +202,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-// Fonction pour calculer l'âge à partir de la date de naissance
-function calculateAge(birthdate: Date): number {
-  const today = new Date();
-  const birthDate = new Date(birthdate);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age;
-}
 
 export default Dashboard;
