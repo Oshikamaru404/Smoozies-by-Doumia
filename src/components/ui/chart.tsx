@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -352,6 +353,202 @@ function getPayloadConfigFromPayload(
     ? config[configLabelKey]
     : config[key as keyof typeof config]
 }
+
+// Add BarChart component
+export const BarChart = ({ 
+  data, 
+  index, 
+  categories, 
+  colors, 
+  valueFormatter, 
+  showLegend = true,
+  showGridLines = true,
+  layout = 'horizontal',
+  stack = false,
+  className,
+  ...props 
+}: {
+  data: any[];
+  index: string;
+  categories: string[];
+  colors?: string[];
+  valueFormatter?: (value: number) => string;
+  showLegend?: boolean;
+  showGridLines?: boolean;
+  layout?: 'horizontal' | 'vertical';
+  stack?: boolean;
+  className?: string;
+  [key: string]: any;
+}) => {
+  const isVertical = layout === 'vertical';
+  
+  // Create a config object for the chart
+  const chartConfig: ChartConfig = {};
+  categories.forEach((category, index) => {
+    chartConfig[category] = {
+      label: category,
+      color: colors?.[index],
+    };
+  });
+
+  return (
+    <ChartContainer config={chartConfig} className={className}>
+      <RechartsPrimitive.BarChart
+        data={data}
+        layout={layout}
+        margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+        {...props}
+      >
+        {showGridLines && (
+          <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
+        )}
+        
+        {isVertical ? (
+          <>
+            <RechartsPrimitive.XAxis type="number" />
+            <RechartsPrimitive.YAxis dataKey={index} type="category" />
+          </>
+        ) : (
+          <>
+            <RechartsPrimitive.XAxis dataKey={index} />
+            <RechartsPrimitive.YAxis />
+          </>
+        )}
+        
+        {showLegend && <RechartsPrimitive.Legend />}
+        
+        <RechartsPrimitive.Tooltip
+          content={({ active, payload, label }) => {
+            if (!active || !payload) return null;
+            
+            return (
+              <div className="rounded-lg border bg-background p-2 shadow-sm">
+                <div className="grid gap-1">
+                  <div className="font-medium">{label}</div>
+                  {payload.map((item: any, index: number) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-muted-foreground">
+                        {item.name}:
+                      </span>
+                      <span className="font-medium">
+                        {valueFormatter ? valueFormatter(item.value) : item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }}
+        />
+        
+        {categories.map((category, index) => (
+          <RechartsPrimitive.Bar
+            key={category}
+            dataKey={category}
+            fill={colors?.[index] || `hsl(var(--primary))`}
+            radius={4}
+            stackId={stack ? "stack" : undefined}
+          />
+        ))}
+      </RechartsPrimitive.BarChart>
+    </ChartContainer>
+  );
+};
+
+// Add LineChart component
+export const LineChart = ({ 
+  data, 
+  index, 
+  categories, 
+  colors,
+  valueFormatter,
+  showLegend = true,
+  showGridLines = true,
+  className,
+  ...props 
+}: {
+  data: any[];
+  index: string;
+  categories: string[];
+  colors?: string[];
+  valueFormatter?: (value: number) => string;
+  showLegend?: boolean;
+  showGridLines?: boolean;
+  className?: string;
+  [key: string]: any;
+}) => {
+  // Create a config object for the chart
+  const chartConfig: ChartConfig = {};
+  categories.forEach((category, index) => {
+    chartConfig[category] = {
+      label: category,
+      color: colors?.[index],
+    };
+  });
+
+  return (
+    <ChartContainer config={chartConfig} className={className}>
+      <RechartsPrimitive.LineChart
+        data={data}
+        margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+        {...props}
+      >
+        {showGridLines && (
+          <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
+        )}
+        
+        <RechartsPrimitive.XAxis dataKey={index} />
+        <RechartsPrimitive.YAxis />
+        
+        {showLegend && <RechartsPrimitive.Legend />}
+        
+        <RechartsPrimitive.Tooltip
+          content={({ active, payload, label }) => {
+            if (!active || !payload) return null;
+            
+            return (
+              <div className="rounded-lg border bg-background p-2 shadow-sm">
+                <div className="grid gap-1">
+                  <div className="font-medium">{label}</div>
+                  {payload.map((item: any, index: number) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-muted-foreground">
+                        {item.name}:
+                      </span>
+                      <span className="font-medium">
+                        {valueFormatter ? valueFormatter(item.value) : item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }}
+        />
+        
+        {categories.map((category, index) => (
+          <RechartsPrimitive.Line
+            key={category}
+            type="monotone"
+            dataKey={category}
+            stroke={colors?.[index] || `hsl(var(--primary))`}
+            strokeWidth={2}
+            dot={{ r: 4 }}
+            activeDot={{ r: 6 }}
+          />
+        ))}
+      </RechartsPrimitive.LineChart>
+    </ChartContainer>
+  );
+};
 
 export {
   ChartContainer,

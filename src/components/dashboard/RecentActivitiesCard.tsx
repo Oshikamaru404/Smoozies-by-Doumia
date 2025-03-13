@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar, Brain, Rocket, Alarm, MessageCircle } from "lucide-react";
+import { Clock, Calendar, Brain, Rocket, AlarmClock, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const activities = [
@@ -157,7 +157,7 @@ const RecentActivitiesCard = () => {
                 className="flex items-start gap-4 p-3 rounded-lg border border-muted/50 hover:border-muted transition-colors"
               >
                 <div className="p-2 bg-muted/30 rounded-full">
-                  <Alarm className="h-4 w-4" />
+                  <AlarmClock className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
