@@ -10,7 +10,8 @@ import {
   Menu,
   X,
   LogOut,
-  User
+  User,
+  BookOpen
 } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -46,6 +47,7 @@ const Navbar = () => {
     { href: "/", label: "Tableau de bord", icon: <Home className="h-5 w-5" /> },
     { href: "/analytics", label: "Analyse émotionnelle", icon: <BarChart2 className="h-5 w-5" /> },
     { href: "/activities", label: "Activités", icon: <Activity className="h-5 w-5" /> },
+    { href: "/parent-resources", label: "Ressources parents", icon: <BookOpen className="h-5 w-5" /> },
     { href: "/settings", label: "Paramètres", icon: <Settings className="h-5 w-5" /> },
   ];
 
