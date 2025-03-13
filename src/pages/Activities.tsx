@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import RecentActivitiesCard from "@/components/dashboard/RecentActivitiesCard";
-import { useChildrenStore, Child } from "@/services/childrenService";
+import { useChildrenStore } from "@/services/childrenService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Book, BrainCircuit, CalendarDays, Clock, Gamepad2, Music, Play, Rocket } from "lucide-react";
