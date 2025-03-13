@@ -21,6 +21,7 @@ import { calculateAge } from "@/lib/utils";
 const Dashboard = () => {
   const { children, activeChild, setActiveChild } = useChildrenStore();
   const [selectedTabId, setSelectedTabId] = useState<string>("no-children");
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   
   useEffect(() => {
     // Ensure we have children data and set the default tab and active child
@@ -80,7 +81,9 @@ const Dashboard = () => {
                 ) : (
                   <div className="text-muted-foreground px-2">Aucun enfant enregistré</div>
                 )}
-                <Dialog>
+                
+                {/* Properly structured Dialog component */}
+                <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="sm" className="gap-1">
                       <Plus className="h-4 w-4" />
@@ -93,7 +96,7 @@ const Dashboard = () => {
                       <p className="text-muted-foreground mb-4">
                         Vous allez être redirigé vers le formulaire d'ajout d'enfant.
                       </p>
-                      <Button asChild>
+                      <Button asChild onClick={() => setAddDialogOpen(false)}>
                         <Link to="/add-child">Continuer</Link>
                       </Button>
                     </div>
