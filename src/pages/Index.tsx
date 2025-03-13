@@ -13,11 +13,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Plus, Settings, Users } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const children = [
   {
     id: 1,
-    name: "Emma",
+    name: "Hamza",
     age: 5,
     plushName: "PulcheCare Bunny",
     status: "connected" as const,
@@ -26,7 +27,7 @@ const children = [
   },
   {
     id: 2,
-    name: "Thomas",
+    name: "Imane",
     age: 7,
     plushName: "PulcheCare Rex",
     status: "disconnected" as const,
@@ -64,9 +65,11 @@ const Dashboard = () => {
                     )}
                   </TabsTrigger>
                 ))}
-                <Button variant="ghost" size="sm" className="gap-1">
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline-block">Ajouter</span>
+                <Button variant="ghost" size="sm" className="gap-1" asChild>
+                  <Link to="/add-child">
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline-block">Ajouter</span>
+                  </Link>
                 </Button>
               </TabsList>
               

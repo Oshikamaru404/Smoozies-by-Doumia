@@ -9,6 +9,7 @@ import Analytics from "./pages/Analytics";
 import Activities from "./pages/Activities";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import AddChild from "./pages/AddChild";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/activities" element={<Activities />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/add-child" element={<AddChild />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
