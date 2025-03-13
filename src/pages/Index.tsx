@@ -12,32 +12,20 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Plus, Settings, Users } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
-const children = [
-  {
-    id: 1,
-    name: "Hamza",
-    age: 5,
-    plushName: "PulcheCare Bunny",
-    status: "connected" as const,
-    batteryLevel: 78,
-    lastSync: "il y a 5 min",
-  },
-  {
-    id: 2,
-    name: "Imane",
-    age: 7,
-    plushName: "PulcheCare Rex",
-    status: "disconnected" as const,
-    batteryLevel: 15,
-    lastSync: "il y a 3 heures",
-  },
-];
+import { useChildrenStore } from "@/services/childrenService";
 
 const Dashboard = () => {
-  const [activeChild, setActiveChild] = useState(children[0]);
+  const { children, activeChild, setActiveChild } = useChildrenStore();
+  const [selectedTabId, setSelectedTabId] = useState<string>("child-0");
+  
+  useEffect(() => {
+    if (children.length > 0 && (!activeChild || !children.find(c => c.id === activeChild.id))) {
+      setActiveChild(children[0]);
+      setSelectedTabId(`child-${children[0].id}`);
+    }
+  }, [children, activeChild, setActiveChild]);
   
   return (
     <div className="min-h-screen bg-background pb-12">
@@ -49,22 +37,29 @@ const Dashboard = () => {
             Tableau de bord
           </h1>
           
-          <Tabs defaultValue="child-1" className="space-y-4 animate-slide-up opacity-0" style={{ animationDelay: '0.2s' }}>
+          <Tabs value={selectedTabId} className="space-y-4 animate-slide-up opacity-0" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <TabsList className="bg-transparent p-0 h-auto space-x-2">
-                {children.map((child) => (
-                  <TabsTrigger
-                    key={child.id}
-                    value={`child-${child.id}`}
-                    onClick={() => setActiveChild(child)}
-                    className="rounded-lg px-4 py-2 h-auto data-[state=active]:shadow-sm transition-all"
-                  >
-                    {child.name}
-                    {child.status === "connected" && (
-                      <span className="w-2 h-2 bg-primary rounded-full ml-2" />
-                    )}
-                  </TabsTrigger>
-                ))}
+                {children.length > 0 ? (
+                  children.map((child) => (
+                    <TabsTrigger
+                      key={child.id}
+                      value={`child-${child.id}`}
+                      onClick={() => {
+                        setActiveChild(child);
+                        setSelectedTabId(`child-${child.id}`);
+                      }}
+                      className="rounded-lg px-4 py-2 h-auto data-[state=active]:shadow-sm transition-all"
+                    >
+                      {child.name}
+                      {child.status === "connected" && (
+                        <span className="w-2 h-2 bg-primary rounded-full ml-2" />
+                      )}
+                    </TabsTrigger>
+                  ))
+                ) : (
+                  <div className="text-muted-foreground px-2">Aucun enfant enregistré</div>
+                )}
                 <Button variant="ghost" size="sm" className="gap-1" asChild>
                   <Link to="/add-child">
                     <Plus className="h-4 w-4" />
@@ -84,67 +79,98 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {children.map((child) => (
-              <TabsContent key={child.id} value={`child-${child.id}`} className="space-y-6 mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="md:col-span-2 bg-gradient-to-br from-primary/5 to-accent/5 shadow-soft">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                        <div>
-                          <h2 className="text-2xl font-bold">{child.name}</h2>
-                          <p className="text-muted-foreground">
-                            {child.age} ans
-                          </p>
+            {children.length > 0 ? (
+              children.map((child) => (
+                <TabsContent key={child.id} value={`child-${child.id}`} className="space-y-6 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="md:col-span-2 bg-gradient-to-br from-primary/5 to-accent/5 shadow-soft">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                          <div>
+                            <h2 className="text-2xl font-bold">{child.name}</h2>
+                            <p className="text-muted-foreground">
+                              {calculateAge(child.birthdate)} ans
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">
+                              Dernière analyse: aujourd'hui
+                            </Badge>
+                            <Badge variant="outline" className="bg-accent/10 hover:bg-accent/20">
+                              État: Heureux
+                            </Badge>
+                          </div>
                         </div>
                         
-                        <div className="flex flex-wrap gap-2">
-                          <Badge variant="outline" className="bg-primary/10 hover:bg-primary/20">
-                            Dernière analyse: aujourd'hui
-                          </Badge>
-                          <Badge variant="outline" className="bg-accent/10 hover:bg-accent/20">
-                            État: Heureux
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      <Alert className="bg-card">
-                        <Bell className="h-4 w-4" />
-                        <AlertTitle>Information</AlertTitle>
-                        <AlertDescription>
-                          {child.name} a été calme aujourd'hui. Aucune alerte détectée.
-                        </AlertDescription>
-                      </Alert>
-                    </CardContent>
-                  </Card>
+                        <Alert className="bg-card">
+                          <Bell className="h-4 w-4" />
+                          <AlertTitle>Information</AlertTitle>
+                          <AlertDescription>
+                            {child.name} a été calme aujourd'hui. Aucune alerte détectée.
+                          </AlertDescription>
+                        </Alert>
+                      </CardContent>
+                    </Card>
+                    
+                    <PlushDeviceCard
+                      name={child.plushName || "PulcheCare Buddy"}
+                      status={child.status}
+                      batteryLevel={child.batteryLevel}
+                      lastSync={child.lastSync}
+                    />
+                  </div>
                   
-                  <PlushDeviceCard
-                    name={child.plushName}
-                    status={child.status}
-                    batteryLevel={child.batteryLevel}
-                    lastSync={child.lastSync}
-                  />
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <EmotionalStateCard />
+                    <HealthStatusCard />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <QuickActionsCard />
+                    <RecentActivitiesCard />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-6">
+                    <AlarmNotificationsCard />
+                  </div>
+                </TabsContent>
+              ))
+            ) : (
+              <div className="py-12 text-center">
+                <div className="max-w-md mx-auto">
+                  <h3 className="text-xl font-medium mb-3">Aucun enfant enregistré</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Commencez par ajouter un profil pour votre enfant pour accéder aux fonctionnalités de PulcheCare.
+                  </p>
+                  <Button asChild>
+                    <Link to="/add-child" className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Ajouter un enfant
+                    </Link>
+                  </Button>
                 </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <EmotionalStateCard />
-                  <HealthStatusCard />
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <QuickActionsCard />
-                  <RecentActivitiesCard />
-                </div>
-                
-                <div className="grid grid-cols-1 gap-6">
-                  <AlarmNotificationsCard />
-                </div>
-              </TabsContent>
-            ))}
+              </div>
+            )}
           </Tabs>
         </header>
       </main>
     </div>
   );
 };
+
+// Fonction pour calculer l'âge à partir de la date de naissance
+function calculateAge(birthdate: Date): number {
+  const today = new Date();
+  const birthDate = new Date(birthdate);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+}
 
 export default Dashboard;

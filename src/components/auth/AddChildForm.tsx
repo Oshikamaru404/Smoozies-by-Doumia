@@ -3,6 +3,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import { fr } from "date-fns/locale";
 import { CalendarIcon, Camera, Info, X } from "lucide-react";
 import { QrReader } from "react-qr-reader";
 import { toast } from "sonner";
+import { useChildrenStore } from "@/services/childrenService";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -42,6 +44,8 @@ export function AddChildForm() {
   const [step, setStep] = useState(1);
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const addChild = useChildrenStore((state) => state.addChild);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,12 +63,33 @@ export function AddChildForm() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
-    toast({
-      title: "Profil enfant créé",
+    
+    // Déterminer un nom de peluche basé sur le genre
+    let plushName = "PulcheCare Bear";
+    if (values.gender === "fille") {
+      plushName = "PulcheCare Bunny";
+    } else if (values.gender === "garçon") {
+      plushName = "PulcheCare Rex";
+    }
+    
+    // Ajouter l'enfant au store
+    const newChild = addChild({
+      name: values.name,
+      birthdate: values.birthdate,
+      gender: values.gender,
+      plushId: values.plushId,
+      plushName: plushName,
+      preferences: values.preferences
+    });
+    
+    toast.success("Profil enfant créé", {
       description: `Le profil de ${values.name} a été créé avec succès!`,
     });
-    // Here would be the code to send the data to your backend
-    // For now, we just log it to the console and show a toast
+    
+    // Rediriger vers la page d'accueil
+    setTimeout(() => {
+      navigate("/");
+    }, 1000);
   };
 
   const goToNextStep = async () => {
@@ -121,8 +146,7 @@ export function AddChildForm() {
     if (result) {
       form.setValue("plushId", result);
       setScanResult(result);
-      toast({
-        title: "QR Code détecté!",
+      toast.success("QR Code détecté!", {
         description: `ID de peluche: ${result}`,
       });
       setShowQrScanner(false);
@@ -131,8 +155,7 @@ export function AddChildForm() {
 
   const handleScanError = (error: Error) => {
     console.error("QR Scanner error:", error);
-    toast({
-      title: "Erreur de lecture",
+    toast.error("Erreur de lecture", {
       description: "Impossible d'accéder à la caméra ou de lire le QR code"
     });
   };
