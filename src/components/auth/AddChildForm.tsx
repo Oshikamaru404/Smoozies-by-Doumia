@@ -16,7 +16,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { CalendarIcon, Info } from "lucide-react";
+import { CalendarIcon, Camera, Info, X } from "lucide-react";
+import { QrReader } from "react-qr-reader";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -39,6 +41,8 @@ const formSchema = z.object({
 export function AddChildForm() {
   const [step, setStep] = useState(1);
   const [showQrScanner, setShowQrScanner] = useState(false);
+  const [scanResult, setScanResult] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,8 +60,12 @@ export function AddChildForm() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
+    toast({
+      title: "Profil enfant créé",
+      description: `Le profil de ${values.name} a été créé avec succès!`,
+    });
     // Here would be the code to send the data to your backend
-    // For now, we just log it to the console
+    // For now, we just log it to the console and show a toast
   };
 
   const goToNextStep = async () => {
@@ -110,9 +118,25 @@ export function AddChildForm() {
     </div>
   );
 
-  const handleScanComplete = (result: string) => {
-    form.setValue("plushId", result);
-    setShowQrScanner(false);
+  const handleScan = (result: string | null) => {
+    if (result) {
+      form.setValue("plushId", result);
+      setScanResult(result);
+      toast({
+        title: "QR Code détecté!",
+        description: `ID de peluche: ${result}`,
+      });
+      setShowQrScanner(false);
+    }
+  };
+
+  const handleScanError = (error: Error) => {
+    console.error(error);
+    toast({
+      variant: "destructive",
+      title: "Erreur de lecture",
+      description: "Impossible d'accéder à la caméra ou de lire le QR code",
+    });
   };
 
   return (
@@ -324,25 +348,69 @@ export function AddChildForm() {
                 </div>
                 
                 <div className="flex justify-center mb-6">
-                  <div className="w-48 h-48 border-2 border-dashed rounded-lg flex items-center justify-center bg-muted/30">
-                    {showQrScanner ? (
-                      <div className="text-center">
-                        {/* Here would go the QR scanner component */}
-                        <p className="text-sm text-muted-foreground mb-2">Scannez le QR code</p>
+                  {showQrScanner ? (
+                    <div className="w-full max-w-md">
+                      <div className="relative mb-4">
                         <Button 
                           variant="outline" 
-                          size="sm" 
-                          onClick={() => handleScanComplete("PLUSH-12345")}
+                          size="icon" 
+                          className="absolute top-2 right-2 z-10 bg-background/80"
+                          onClick={() => setShowQrScanner(false)}
                         >
-                          Simuler scan réussi
+                          <X className="h-4 w-4" />
                         </Button>
+                        <div className="overflow-hidden rounded-lg border">
+                          <QrReader
+                            constraints={{ facingMode: 'environment' }}
+                            onResult={(result) => {
+                              if (result) {
+                                handleScan(result.getText());
+                              }
+                            }}
+                            scanDelay={500}
+                            className="w-full"
+                            videoStyle={{ objectFit: 'cover' }}
+                            videoContainerStyle={{ 
+                              position: 'relative',
+                              width: '100%', 
+                              height: '300px',
+                              borderRadius: '0.5rem',
+                              overflow: 'hidden'
+                            }}
+                            videoId="qr-reader-video"
+                          />
+                          <div className="absolute inset-0 border-2 border-primary/30 rounded-lg pointer-events-none"></div>
+                        </div>
+                        <p className="mt-2 text-sm text-center text-muted-foreground">
+                          Centrez le QR code dans le cadre
+                        </p>
                       </div>
-                    ) : (
-                      <Button onClick={() => setShowQrScanner(true)}>
-                        Scanner QR
-                      </Button>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="w-48 h-48 border-2 border-dashed rounded-lg flex items-center justify-center bg-muted/30">
+                      {scanResult ? (
+                        <div className="text-center px-4">
+                          <p className="font-medium text-primary mb-2">QR Code scanné!</p>
+                          <p className="text-sm text-muted-foreground mb-3">ID: {scanResult}</p>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setShowQrScanner(true)}
+                          >
+                            Scanner à nouveau
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          onClick={() => setShowQrScanner(true)} 
+                          className="gap-2"
+                        >
+                          <Camera className="h-4 w-4" />
+                          Scanner QR
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <FormField
