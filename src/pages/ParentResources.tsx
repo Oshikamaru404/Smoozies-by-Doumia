@@ -282,6 +282,7 @@ const ParentResourcesPage = () => {
   
   const [activeCondition, setActiveCondition] = useState("stress");
   const [showMap, setShowMap] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   // Redirect if no child is selected
   useEffect(() => {
@@ -320,11 +321,6 @@ const ParentResourcesPage = () => {
   };
   
   const relevantConditions = getRelevantConditions();
-  
-  const handleFindSpecialist = (specialties) => {
-    // In a real application, this would filter specialists based on specialties
-    setShowMap(true);
-  };
 
   return (
     <div className="container py-8 max-w-7xl">
@@ -368,12 +364,15 @@ const ParentResourcesPage = () => {
                       <CardDescription>{condition.description}</CardDescription>
                     </div>
                     
-                    <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="outline" className="flex items-center gap-1">
-                        <Info className="h-4 w-4" />
-                        <span className="hidden sm:inline">Important</span>
-                      </Button>
-                    </AlertDialogTrigger>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex items-center gap-1"
+                      onClick={() => setShowDisclaimer(true)}
+                    >
+                      <Info className="h-4 w-4" />
+                      <span className="hidden sm:inline">Important</span>
+                    </Button>
                   </div>
                 </CardHeader>
                 
@@ -605,7 +604,8 @@ const ParentResourcesPage = () => {
         </Card>
       </div>
       
-      <AlertDialog>
+      {/* Fix: Proper AlertDialog implementation with trigger */}
+      <AlertDialog open={showDisclaimer} onOpenChange={setShowDisclaimer}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Note importante</AlertDialogTitle>
