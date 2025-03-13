@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,6 @@ interface HealthStatusCardProps {
   refreshInterval?: number; // Intervalle de rafraîchissement en ms
 }
 
-// Fonction pour déterminer le statut d'une métrique de santé
 const getHealthStatus = (metric: string, value: number): { status: string; color: string } => {
   switch (metric) {
     case 'heartRate':
@@ -67,7 +65,6 @@ const HealthStatusCard = ({
     isInitialized
   } = useVoiceAssistant();
 
-  // Fonction pour mettre à jour les données du capteur
   const updateSensorData = async () => {
     if (!activeChild) return;
     
@@ -79,7 +76,6 @@ const HealthStatusCard = ({
         setHealthData(prevData => ({ ...prevData, ...data }));
         setLastUpdated("à l'instant");
         
-        // Formater l'horodatage si disponible
         if (data.timestamp) {
           const timestamp = new Date(data.timestamp);
           setLastUpdated(`${timestamp.getHours().toString().padStart(2, '0')}:${timestamp.getMinutes().toString().padStart(2, '0')}`);
@@ -92,14 +88,12 @@ const HealthStatusCard = ({
     }
   };
 
-  // Effet pour récupérer les données initiales
   useEffect(() => {
     if (activeChild) {
       updateSensorData();
     }
   }, [activeChild]);
 
-  // Effet pour configurer la mise à jour périodique
   useEffect(() => {
     if (!refreshInterval || refreshInterval <= 0) return;
     
@@ -110,12 +104,10 @@ const HealthStatusCard = ({
     return () => clearInterval(intervalId);
   }, [refreshInterval, activeChild]);
 
-  // Obtenir les statuts de santé
   const heartRateStatus = getHealthStatus('heartRate', healthData.heartRate || 0);
   const temperatureStatus = getHealthStatus('temperature', healthData.temperature || 0);
   const sleepQualityStatus = getHealthStatus('sleepQuality', healthData.sleepQuality || 0);
 
-  // Déterminer un rapport quotidien basé sur les données
   const getDailyReport = () => {
     if (!healthData.heartRate || !healthData.temperature || !healthData.sleepQuality) {
       return "Données insuffisantes pour générer un rapport.";
@@ -137,7 +129,6 @@ const HealthStatusCard = ({
     }
   };
 
-  // Gérer l'ouverture de l'assistant vocal
   const handleOpenAssistant = () => {
     setAssistantOpen(true);
     if (!lastResponse) {
@@ -175,16 +166,60 @@ const HealthStatusCard = ({
               {isRefreshing ? <Loader2 className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
             </Button>
             
-            <DialogTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 text-primary"
-                onClick={handleOpenAssistant}
-              >
-                <Volume2 className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
+            <Dialog open={assistantOpen} onOpenChange={setAssistantOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-primary"
+                  onClick={handleOpenAssistant}
+                >
+                  <Volume2 className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Assistant vocal Pulche</DialogTitle>
+                  <DialogDescription>
+                    Communiquez avec la peluche de {activeChild?.name || "votre enfant"}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="py-4">
+                  <div className="bg-muted/30 p-4 rounded-lg mb-4 min-h-[100px] flex items-center justify-center">
+                    {isProcessing ? (
+                      <div className="text-center">
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+                        <p className="text-sm text-muted-foreground">Traitement en cours...</p>
+                      </div>
+                    ) : lastResponse ? (
+                      <p>{lastResponse}</p>
+                    ) : (
+                      <p className="text-muted-foreground text-center">
+                        Utilisez le microphone pour parler avec l'assistant vocal
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      variant={isListening ? "destructive" : "default"}
+                      className="rounded-full h-16 w-16"
+                      onClick={isListening ? stopListening : startListening}
+                      disabled={isProcessing || !isInitialized}
+                    >
+                      <Mic className={cn("h-6 w-6", isListening && "animate-pulse")} />
+                    </Button>
+                  </div>
+                  
+                  <p className="text-xs text-center text-muted-foreground mt-4">
+                    {isListening 
+                      ? "Écoute en cours... Cliquez pour arrêter" 
+                      : "Cliquez sur le microphone pour parler"}
+                  </p>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </CardHeader>
@@ -279,52 +314,6 @@ const HealthStatusCard = ({
           Voir l'historique complet
         </Button>
       </CardFooter>
-
-      {/* Modal pour l'assistant vocal */}
-      <Dialog open={assistantOpen} onOpenChange={setAssistantOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Assistant vocal Pulche</DialogTitle>
-            <DialogDescription>
-              Communiquez avec la peluche de {activeChild?.name || "votre enfant"}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <div className="bg-muted/30 p-4 rounded-lg mb-4 min-h-[100px] flex items-center justify-center">
-              {isProcessing ? (
-                <div className="text-center">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
-                  <p className="text-sm text-muted-foreground">Traitement en cours...</p>
-                </div>
-              ) : lastResponse ? (
-                <p>{lastResponse}</p>
-              ) : (
-                <p className="text-muted-foreground text-center">
-                  Utilisez le microphone pour parler avec l'assistant vocal
-                </p>
-              )}
-            </div>
-            
-            <div className="flex justify-center mt-4">
-              <Button
-                variant={isListening ? "destructive" : "default"}
-                className="rounded-full h-16 w-16"
-                onClick={isListening ? stopListening : startListening}
-                disabled={isProcessing || !isInitialized}
-              >
-                <Mic className={cn("h-6 w-6", isListening && "animate-pulse")} />
-              </Button>
-            </div>
-            
-            <p className="text-xs text-center text-muted-foreground mt-4">
-              {isListening 
-                ? "Écoute en cours... Cliquez pour arrêter" 
-                : "Cliquez sur le microphone pour parler"}
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 };
