@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChildrenStore } from "@/services/childrenService";
@@ -750,3 +751,17 @@ const ParentResourcesPage = () => {
                       <p className="flex items-center text-muted-foreground">
                         <MapPin className="h-3.5 w-3.5 mr-1.5" />
                         {specialist.address}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </>
+  );
+};
+
+export default ParentResourcesPage;
