@@ -1,6 +1,6 @@
 
 # Smoozie by Doumia
-
+Live Demo : https://cuddly-emotion-sentinel.lovable.app/
 ## About Smoozie
 
 Smoozie by Doumia is an innovative smart plush companion designed to support children's emotional well-being. The application works in tandem with a plush toy equipped with sensors to monitor a child's emotional state and provide insights to parents.
