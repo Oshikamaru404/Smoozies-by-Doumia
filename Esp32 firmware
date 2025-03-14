@@ -1,0 +1,83 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <Adafruit_Servo.h>
+#include <DHT.h>
+
+// WiFi credentials
+const char* ssid = "VOTRE_SSID";
+const char* password = "VOTRE_MOT_DE_PASSE";
+
+// Google Gemini API
+const char* gemini_api_url = "https://api.google.com/gemini_live";
+const char* gemini_api_key = "VOTRE_CLE_API";
+
+// Capteurs
+#define DHTPIN 4  // Pin du capteur DHT22
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+// Servo-moteur
+Adafruit_Servo servo;
+#define SERVO_PIN 5
+
+void setup() {
+    Serial.begin(115200);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\nWiFi connecté!");
+    dht.begin();
+    servo.attach(SERVO_PIN);
+}
+
+void loop() {
+    float temp = dht.readTemperature();
+    if (isnan(temp)) {
+        Serial.println("Erreur lecture température!");
+        return;
+    }
+    Serial.print("Température: ");
+    Serial.print(temp);
+    Serial.println("°C");
+    
+    String emotion = detectEmotion();
+    if (emotion == "triste" || emotion == "stressé") {
+        simulateBreathing();
+    }
+    delay(5000);
+}
+
+String detectEmotion() {
+    HTTPClient http;
+    http.begin(gemini_api_url);
+    http.addHeader("Content-Type", "application/json");
+    String payload = "{\"query\": \"Reconnaissance d'émotion\"}";
+    int httpResponseCode = http.POST(payload);
+    
+    if (httpResponseCode > 0) {
+        String response = http.getString();
+        StaticJsonDocument<200> doc;
+        deserializeJson(doc, response);
+        String emotion = doc["emotion"].as<String>();
+        Serial.println("Émotion détectée: " + emotion);
+        return emotion;
+    } else {
+        Serial.println("Échec de la requête API");
+        return "inconnu";
+    }
+    http.end();
+}
+
+void simulateBreathing() {
+    Serial.println("Simulation de respiration...");
+    for (int i = 0; i < 3; i++) {
+        servo.write(0);
+        delay(2000);
+        servo.write(90);
+        delay(2000);
+    }
+    Serial.println("Respiration terminée.");
+}
